@@ -6,40 +6,32 @@ import {createAsyncThunk, createSelector} from '@reduxjs/toolkit'
 import {default as client} from '../octoClient'
 import {Subscription} from '../wsclient'
 import {ErrorId} from '../errors'
+import {Utils} from '../utils'
 
 import {RootState} from './index'
+
+async function safeCall<T>(promise: Promise<T>, fallback: T): Promise<T> {
+    try {
+        return await promise
+    } catch (e) {
+        Utils.logWarn(`initialLoad: optional API call failed, using fallback. Error: ${e}`)
+        return fallback
+    }
+}
 
 export const initialLoad = createAsyncThunk(
     'initialLoad',
     async () => {
-        const [
-            meResult,
-            myConfigResult,
-            teamResult,
-            teamsResult,
-            boardsResult,
-            boardsMembershipsResult,
-            boardTemplatesResult,
-            limitsResult,
-        ] = await Promise.allSettled([
+        const [me, myConfig, team, teams, boards, boardsMemberships, boardTemplates, limits] = await Promise.all([
             client.getMe(),
             client.getMyConfig(),
             client.getTeam(),
-            client.getTeams(),
-            client.getBoards(),
-            client.getMyBoardMemberships(),
-            client.getTeamTemplates(),
-            client.getBoardsCloudLimits(),
+            safeCall(client.getTeams(), []),
+            safeCall(client.getBoards(), []),
+            safeCall(client.getMyBoardMemberships(), []),
+            safeCall(client.getTeamTemplates(), []),
+            safeCall(client.getBoardsCloudLimits(), undefined),
         ])
-
-        const me = meResult.status === 'fulfilled' ? meResult.value : undefined
-        const myConfig = myConfigResult.status === 'fulfilled' ? myConfigResult.value : undefined
-        const team = teamResult.status === 'fulfilled' ? teamResult.value : undefined
-        const teams = teamsResult.status === 'fulfilled' ? teamsResult.value : []
-        const boards = boardsResult.status === 'fulfilled' ? boardsResult.value : []
-        const boardsMemberships = boardsMembershipsResult.status === 'fulfilled' ? boardsMembershipsResult.value : []
-        const boardTemplates = boardTemplatesResult.status === 'fulfilled' ? boardTemplatesResult.value : []
-        const limits = limitsResult.status === 'fulfilled' ? limitsResult.value : undefined
 
         // if no me, normally user not logged in
         if (!me) {
