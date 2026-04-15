@@ -312,6 +312,7 @@ class OctoClient {
     private async getBlocksWithPath(path: string): Promise<Block[]> {
         const response = await fetch(this.getBaseURL() + path, {headers: this.headers()})
         if (response.status !== 200) {
+            Utils.logWarn(`getBlocksWithPath failed with status ${response.status} for path: ${path}`)
             return []
         }
         const blocks = (await this.getJson(response, [])) as Block[]
@@ -321,6 +322,7 @@ class OctoClient {
     private async getBoardsWithPath(path: string): Promise<Board[]> {
         const response = await fetch(this.getBaseURL() + path, {headers: this.headers()})
         if (response.status !== 200) {
+            Utils.logWarn(`getBoardsWithPath failed with status ${response.status} for path: ${path}`)
             return []
         }
         const boards = (await this.getJson(response, [])) as Board[]
@@ -330,6 +332,7 @@ class OctoClient {
     private async getBoardMembersWithPath(path: string): Promise<BoardMember[]> {
         const response = await fetch(this.getBaseURL() + path, {headers: this.headers()})
         if (response.status !== 200) {
+            Utils.logWarn(`getBoardMembersWithPath failed with status ${response.status} for path: ${path}`)
             return []
         }
         const boardMembers = (await this.getJson(response, [])) as BoardMember[]

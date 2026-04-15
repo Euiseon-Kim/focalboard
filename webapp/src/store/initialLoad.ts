@@ -12,7 +12,16 @@ import {RootState} from './index'
 export const initialLoad = createAsyncThunk(
     'initialLoad',
     async () => {
-        const [me, myConfig, team, teams, boards, boardsMemberships, boardTemplates, limits] = await Promise.all([
+        const [
+            meResult,
+            myConfigResult,
+            teamResult,
+            teamsResult,
+            boardsResult,
+            boardsMembershipsResult,
+            boardTemplatesResult,
+            limitsResult,
+        ] = await Promise.allSettled([
             client.getMe(),
             client.getMyConfig(),
             client.getTeam(),
@@ -22,6 +31,15 @@ export const initialLoad = createAsyncThunk(
             client.getTeamTemplates(),
             client.getBoardsCloudLimits(),
         ])
+
+        const me = meResult.status === 'fulfilled' ? meResult.value : undefined
+        const myConfig = myConfigResult.status === 'fulfilled' ? myConfigResult.value : undefined
+        const team = teamResult.status === 'fulfilled' ? teamResult.value : undefined
+        const teams = teamsResult.status === 'fulfilled' ? teamsResult.value : []
+        const boards = boardsResult.status === 'fulfilled' ? boardsResult.value : []
+        const boardsMemberships = boardsMembershipsResult.status === 'fulfilled' ? boardsMembershipsResult.value : []
+        const boardTemplates = boardTemplatesResult.status === 'fulfilled' ? boardTemplatesResult.value : []
+        const limits = limitsResult.status === 'fulfilled' ? limitsResult.value : undefined
 
         // if no me, normally user not logged in
         if (!me) {

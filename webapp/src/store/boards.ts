@@ -170,6 +170,12 @@ const boardsSlice = createSlice({
         builder.addCase(loadBoardData.rejected, (state) => {
             state.loadingBoard = false
         })
+        builder.addCase(initialLoad.pending, (state) => {
+            state.loadingBoard = true
+        })
+        builder.addCase(initialLoad.rejected, (state) => {
+            state.loadingBoard = false
+        })
         builder.addCase(initialReadOnlyLoad.fulfilled, (state, action) => {
             state.boards = {}
             state.templates = {}
@@ -182,6 +188,7 @@ const boardsSlice = createSlice({
             }
         })
         builder.addCase(initialLoad.fulfilled, (state, action) => {
+            state.loadingBoard = false
             state.boards = {}
             action.payload.boards.forEach((board) => {
                 state.boards[board.id] = board
